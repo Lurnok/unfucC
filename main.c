@@ -5,7 +5,6 @@
 #include <stdlib.h>
 
 #include "header.h"
-#include "instructions.h"
 #include "stack.h"
 #include "tokens.h"
 
@@ -54,6 +53,7 @@ int main(int argc, char * argv[]){
     int instruction_ptr = 0;
     int ptr = 0;
     Cells cells;
+    memset(cells, 0, sizeof cells);
 
     int loop_count = 0;
 
@@ -79,87 +79,92 @@ int main(int argc, char * argv[]){
         return EXIT_FAILURE;
     };
 
-    while(1){
-        if (tokens[instruction_ptr].token == ENF){
-            break;
-        } else {
-            if(execute_instruction(tokens[instruction_ptr], &ptr, cells, &instruction_ptr,pairs,loop_count) != 0){
-                free(tokens);
-                free(content);
-                free(pairs);
-                printf("Unexpected error ._.");
-                return EXIT_FAILURE;
-            }
+    static void *dispatch_table[] = {
+    &&PTL,  
+    &&PTR,  
+    &&INC,  
+    &&DEC,  
+    &&PRT,  
+    &&IPT,  
+    &&LPS,  
+    &&LPE,  
+    &&CMT,  
+    &&CLR,  
+    &&ADC,  
+    &&ENF   
+};
+
+    goto *dispatch_table[tokens[instruction_ptr].token];
+
+    PTR:
+        ptr = (ptr + tokens[instruction_ptr].count) & 32767;
+        instruction_ptr += 1;
+        goto *dispatch_table[tokens[instruction_ptr].token];
+
+    PTL:
+        ptr = (ptr - tokens[instruction_ptr].count) & 32767;
+        instruction_ptr += 1;
+        goto *dispatch_table[tokens[instruction_ptr].token];
+
+    INC:
+        cells[ptr] = (unsigned char)(cells[ptr] + tokens[instruction_ptr].count);
+        instruction_ptr += 1;
+        goto *dispatch_table[tokens[instruction_ptr].token];
+    
+    DEC:
+        cells[ptr] = (unsigned char)(cells[ptr] - tokens[instruction_ptr].count);
+        instruction_ptr += 1;
+        goto *dispatch_table[tokens[instruction_ptr].token];
+            
+    PRT:
+        putchar(cells[ptr]);
+        instruction_ptr += 1;
+        goto *dispatch_table[tokens[instruction_ptr].token];
+            
+    IPT:
+        cells[ptr] = getchar();
+        instruction_ptr += 1;
+        goto *dispatch_table[tokens[instruction_ptr].token];
+
+    CLR:
+        cells[ptr] = 0;
+        instruction_ptr += 1;
+        goto *dispatch_table[tokens[instruction_ptr].token];
+    
+    ADC:
+        cells[(ptr + 1) & 32767] += cells[ptr];
+        cells[ptr] = 0;
+        instruction_ptr += 1;
+        goto *dispatch_table[tokens[instruction_ptr].token];
+            
+    LPS:
+        if(cells[ptr] == 0){
+            instruction_ptr = pairs[instruction_ptr] + 1;
+        }  else {
+            instruction_ptr += 1;
         }
+        goto *dispatch_table[tokens[instruction_ptr].token];
 
+    LPE:
+        if(cells[ptr] != 0){
+            instruction_ptr = pairs[instruction_ptr] + 1;
+        } else {
+            instruction_ptr += 1;
+        }
+        goto *dispatch_table[tokens[instruction_ptr].token];
 
-    }
+    CMT:
+        instruction_ptr += 1;
+        goto *dispatch_table[tokens[instruction_ptr].token];
 
+    ENF:
+        goto END;
+    
+    END:
     free(tokens);
     free(content);
     free(pairs);
     return EXIT_SUCCESS;
-}
-
-
-
-
-
-
-int execute_instruction(Instruction instruction, int * ptr, Cells cells, int * instruction_ptr, int * pairs, int loop_count){
-    switch (instruction.token) {
-
-    case PTL:
-        ptr_left(ptr,instruction.count);
-        *instruction_ptr += 1;
-        break;
-    case PTR:
-        ptr_right(ptr,instruction.count);
-        *instruction_ptr += 1;
-        break;
-    case INC:
-        cell_inc(*ptr, cells,instruction.count);
-        *instruction_ptr += 1;
-        break;
-    case DEC:
-        cell_dec(*ptr, cells,instruction.count);
-        *instruction_ptr += 1;
-        break;
-    case PRT:
-        print_val(*ptr, cells);
-        *instruction_ptr += 1;
-        break;
-    case IPT:
-        if(input_val(*ptr, cells) == 1){
-            return 1;
-        };
-        *instruction_ptr += 1;
-        break;
-    case LPS:
-        if(cells[*ptr] == 0){
-            *instruction_ptr = pairs[*instruction_ptr] + 1;
-        }  else {
-            *instruction_ptr += 1;
-        }
-        break;
-    case LPE:
-        if(cells[*ptr] != 0){
-            *instruction_ptr = pairs[*instruction_ptr] + 1;
-        } else {
-            *instruction_ptr += 1;
-        }
-        break;
-    case CMT:
-        *instruction_ptr += 1;
-        break;
-    case ERR:
-        return 1;
-    case ENF:
-        return 0;
-
-    }
-
-    return 0;
 }
 
 int build_pairs(int * pairs,Instruction * tokens, size_t tokens_len, int loop_count ){

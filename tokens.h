@@ -10,7 +10,8 @@
         TOKEN(LPS)  \
         TOKEN(LPE)  \
         TOKEN(CMT)  \
-        TOKEN(ERR)  \
+        TOKEN(CLR)  \
+        TOKEN(ADC)  \
         TOKEN(ENF)  \
 
 #define GENERATE_ENUM(ENUM) ENUM,

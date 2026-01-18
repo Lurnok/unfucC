@@ -10,4 +10,4 @@ I will make the original Unfuck (c++ version) private because this version is in
 
 ## SPEED
 
-Mandelbrot in 18 seconds on average :)
+Mandelbrot in less thant 10 seconds
