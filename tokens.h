@@ -23,3 +23,8 @@ enum TOKEN_ENUM {
 static const char *TOKEN_STRING[] = {
     FOREACH_TOKEN(GENERATE_STRING)
 };
+
+typedef struct Instruction {
+    enum TOKEN_ENUM token;
+    int count;
+} Instruction;

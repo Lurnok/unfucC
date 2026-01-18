@@ -6,5 +6,5 @@
 #include "tokens.h"
 #include "stack.h"
 
-int execute_instruction(enum TOKEN_ENUM instruction,int * ptr, Cells cells, int * instruction_ptr, int * pairs, int loop_count);
-int build_pairs(int * pairs, enum TOKEN_ENUM * tokens, size_t tokens_len,int loop_count);
+int execute_instruction(Instruction instruction,int * ptr, Cells cells, int * instruction_ptr, int * pairs, int loop_count);
+int build_pairs(int * pairs, Instruction * tokens, size_t tokens_len,int loop_count);

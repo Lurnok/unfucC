@@ -49,7 +49,7 @@ int main(int argc, char * argv[]){
 
     size_t tokens_len;
 
-    enum TOKEN_ENUM * tokens = tokenize(content, &tokens_len);
+    Instruction * tokens = tokenize(content, &tokens_len);
 
     int instruction_ptr = 0;
     int ptr = 0;
@@ -58,7 +58,7 @@ int main(int argc, char * argv[]){
     int loop_count = 0;
 
     for(int i = 0; i < tokens_len; ++i){
-        if(tokens[i] == LPS){
+        if(tokens[i].token == LPS){
             loop_count += 1;
         }
     }
@@ -80,7 +80,7 @@ int main(int argc, char * argv[]){
     };
 
     while(1){
-        if (tokens[instruction_ptr] == ENF){
+        if (tokens[instruction_ptr].token == ENF){
             break;
         } else {
             if(execute_instruction(tokens[instruction_ptr], &ptr, cells, &instruction_ptr,pairs,loop_count) != 0){
@@ -106,23 +106,23 @@ int main(int argc, char * argv[]){
 
 
 
-int execute_instruction(enum TOKEN_ENUM instruction, int * ptr, Cells cells, int * instruction_ptr, int * pairs, int loop_count){
-    switch (instruction) {
+int execute_instruction(Instruction instruction, int * ptr, Cells cells, int * instruction_ptr, int * pairs, int loop_count){
+    switch (instruction.token) {
 
     case PTL:
-        ptr_left(ptr);
+        ptr_left(ptr,instruction.count);
         *instruction_ptr += 1;
         break;
     case PTR:
-        ptr_right(ptr);
+        ptr_right(ptr,instruction.count);
         *instruction_ptr += 1;
         break;
     case INC:
-        cell_inc(*ptr, cells);
+        cell_inc(*ptr, cells,instruction.count);
         *instruction_ptr += 1;
         break;
     case DEC:
-        cell_dec(*ptr, cells);
+        cell_dec(*ptr, cells,instruction.count);
         *instruction_ptr += 1;
         break;
     case PRT:
@@ -162,7 +162,7 @@ int execute_instruction(enum TOKEN_ENUM instruction, int * ptr, Cells cells, int
     return 0;
 }
 
-int build_pairs(int * pairs,enum TOKEN_ENUM * tokens, size_t tokens_len, int loop_count ){
+int build_pairs(int * pairs,Instruction * tokens, size_t tokens_len, int loop_count ){
     struct Stack* stack = createStack(loop_count);
         if (!stack) {
             printf("Failed to create stack.\n");
@@ -170,14 +170,14 @@ int build_pairs(int * pairs,enum TOKEN_ENUM * tokens, size_t tokens_len, int loo
     }
 
     for(int i = 0; i < tokens_len; ++i){
-        if(tokens[i] == LPS){
+        if(tokens[i].token == LPS){
             if (isFull(stack)) {
                 printf("Exceeded maximum nesting capacity.\n");
                 freeStack(stack);
                 return 1;
             }
             push(stack, i);
-        } else if (tokens[i] == LPE) {
+        } else if (tokens[i].token == LPE) {
             if (isEmpty(stack)){
                 printf("Mismatched bracket at position %d.\n",i);
                 freeStack(stack);
