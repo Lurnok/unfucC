@@ -23,20 +23,7 @@ void print_val(int ptr, Cells cells){
 }
 
 int input_val(int ptr, Cells cells){
-    int val;
-
-    do {
-        int result = scanf("%d", &val);
-
-        if (result == EOF) {
-            return 1;
-        }
-        if (result == 0) {
-            while (fgetc(stdin) != '\n');
-        }
-    }while (val < 0 || val > 255);
-    
-    cells[ptr] = (unsigned char)val;
-
+    unsigned char val = getchar();
+    cells[ptr] = val;
     return 0;
 }
